@@ -1,0 +1,12 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # RabbitMQ default port
+      - "15672:15672" # Management plugin (web interface) port
+    environment:
+      RABBITMQ_DEFAULT_USER: user      # Default user (adjust as needed)
+      RABBITMQ_DEFAULT_PASS: password  # Default password (adjust as needed)
+    restart: unless-stopped  # Restart policy
