@@ -1,12 +1,24 @@
 version: '3'
 services:
+
   rabbitmq:
-    image: rabbitmq:3-management
+    image: arm64v8/rabbitmq:3-management   # ARM-compatible version of RabbitMQ
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # RabbitMQ default port
-      - "15672:15672" # Management plugin (web interface) port
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: user      # Default user (adjust as needed)
-      RABBITMQ_DEFAULT_PASS: password  # Default password (adjust as needed)
-    restart: unless-stopped  # Restart policy
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+
+  sensor-monitor:
+    image: ubuntu:latest
+    container_name: sensor-monitor
+    volumes:
+      - ./Sensors/CPU_Temp.py:/Sensors/CPU_Temp.py  # Mount the script into the container
+    command: bash -c "apt-get update && 
+                      apt-get install -y python3 python3-pip && 
+                      pip3 install pika --break-system-packages && 
+                      python3 /Sensors/CPU_Temp.py"
+
+    restart: unless-stopped
