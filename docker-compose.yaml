@@ -10,15 +10,32 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_ERLANG_COOKIE: "A_LONG_RANDOM_STRING"
+    volumes:
+      - ./RabbitMQ/rabbitmq_setup.sh:/etc/rabbitmq/rabbitmq_setup.sh # Script to create additional users
+    command: /bin/bash -c rabbitmq-server
+
+    restart: unless-stopped
 
   sensor-monitor:
-    image: ubuntu:latest
+    build:
+      context: ./Sensors  # Context for the build is now Sensors directory
+      dockerfile: SensorsDockerFile   # This will pick the Dockerfile inside Sensors
     container_name: sensor-monitor
-    volumes:
-      - ./Sensors/CPU_Temp.py:/Sensors/CPU_Temp.py  # Mount the script into the container
-    command: bash -c "apt-get update && 
-                      apt-get install -y python3 python3-pip && 
-                      pip3 install pika --break-system-packages && 
-                      python3 /Sensors/CPU_Temp.py"
+    depends_on:
+      - rabbitmq
 
+    restart: unless-stopped
+
+  web-service:
+    build:
+      context: ./Web_Service  # Context for the build is now Web_Service directory
+      dockerfile: WebServiceDockerFile   # This will pick the Dockerfile inside Web_Service
+    container_name: web-service
+    ports:
+      - "5000:5000"  # Map Flask port to the host
+    depends_on:
+      - rabbitmq
+      - sensor-monitor
+      
     restart: unless-stopped

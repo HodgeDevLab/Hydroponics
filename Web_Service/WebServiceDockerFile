@@ -1,0 +1,19 @@
+# Use Python base image
+FROM python:3.12-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the web service script
+COPY web_service.py /app/web_service.py
+COPY test_consumer.py /app/test_consumer.py
+
+# Install dependencies
+RUN pip install flask pika --break-system-packages
+
+# Expose the port Flask will run on
+EXPOSE 5000
+
+# Run the web service
+CMD ["python3", "web_service.py"]
+#CMD ["python3", "test_consumer.py"]
